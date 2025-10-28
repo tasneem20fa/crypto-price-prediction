@@ -1,0 +1,61 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Crypto Price Predictor (Static)</title>
+  <style>
+    body { font-family: Arial, sans-serif; max-width:700px; margin:40px auto; }
+    input { display:block; margin:6px 0 12px; padding:8px; width:100%; }
+    button { padding:8px 16px; }
+    label { font-weight:600; }
+  </style>
+</head>
+<body>
+  <h1>Crypto Price Predictor</h1>
+  <div id="form">
+    <label>Open</label><input id="open" type="number" />
+    <label>High</label><input id="high" type="number" />
+    <label>Low</label><input id="low" type="number" />
+    <label>Volume BTC</label><input id="volume" type="number" />
+    <label>MA7</label><input id="ma7" type="number" />
+    <label>MA30</label><input id="ma30" type="number" />
+    <label>Lag1 Close</label><input id="lag1" type="number" />
+    <label>Day of Week (0=Mon)</label><input id="dow" type="number" />
+    <button id="btn">Get Prediction</button>
+  </div>
+
+  <h2 id="result" style="margin-top:20px"></h2>
+
+  <script>
+    document.getElementById('btn').onclick = async function() {
+      const payload = {
+        open: parseFloat(document.getElementById('open').value),
+        high: parseFloat(document.getElementById('high').value),
+        low: parseFloat(document.getElementById('low').value),
+        volume_btc: parseFloat(document.getElementById('volume').value),
+        ma7: parseFloat(document.getElementById('ma7').value),
+        ma30: parseFloat(document.getElementById('ma30').value),
+        lag1_close: parseFloat(document.getElementById('lag1_close') ? document.getElementById('lag1_close').value : document.getElementById('lag1').value),
+        lag1_close: parseFloat(document.getElementById('lag1').value || 0),
+        day_of_week: parseInt(document.getElementById('dow').value || 0)
+      };
+
+      try {
+        const resp = await fetch('http://127.0.0.1:5000/predict', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify(payload)
+        });
+        const data = await resp.json();
+        if (resp.ok) {
+          document.getElementById('result').innerText = 'Predicted Close: ' + data.predicted_close;
+        } else {
+          document.getElementById('result').innerText = 'Error: ' + (data.error || JSON.stringify(data));
+        }
+      } catch (err) {
+        document.getElementById('result').innerText = 'Request failed: ' + err.message;
+      }
+    };
+  </script>
+</body>
+</html>
